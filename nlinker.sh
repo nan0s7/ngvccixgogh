@@ -1,14 +1,13 @@
 #!/bin/bash
 
-colours=""
-picture="$1"
-name="$2"
+# Variable initialisation
 out=""
 tmp=""
+colours=""
+end="8"
+name="$2"
+picture="$1"
 declare -a col_arr=()
-end=8
-
-touch output.txt
 
 function finish {
     unset colours
@@ -26,10 +25,11 @@ echo
 echo "--------------------> Getting colours..."
 
 # Will need to adjust this to allow for arguments to be sent to extract.py
-python3 extract.py $picture >output.txt
-
+touch output.txt
+python3 ../gvcci/extract.py $picture >output.txt
 out=`cat output.txt`
 
+# Start organising the colours so ngoghbase.sh can understand them
 tmp="${out#*Background*}"
 tmp="${tmp:0:8}"
 col_arr+=( $tmp )
@@ -39,7 +39,6 @@ tmp="${out#*Foreground*}"
 tmp="${tmp:0:8}"
 col_arr+=( $tmp )
 
-# 8 accent colours, 7 chars in length (for hex codes)
 for j in `seq 0 1`; do
     if [ "$j" -eq "0" ]; then
         out="${out#*Normal*}"
@@ -69,4 +68,3 @@ nohup ./ngoghbase.sh $colours $name >/dev/null 2>&1 &
 
 echo "--------------------> Cleaning up..."
 rm output.txt
-

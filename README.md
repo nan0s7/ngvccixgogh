@@ -3,7 +3,10 @@ A Bash script to allow automatic profile creation of colour schemes computed by 
 
 ## Setup
 - Make sure nlinker.sh and ngoghbase.sh are executable: `chmod +x <file_name>`
-- Place both files in your **gvcci** folder
+- `cd` to a directory to place everything
+- Run `git clone https://github.com/FabriceCastel/gvcci
+- Run `git clone https://github.com/nan0s7/ngvccixgogh
+- `cd` into **ngvccixgogh**
 - Run `nlinker.sh` with desired arguments (see below)
 
 ## Usage
