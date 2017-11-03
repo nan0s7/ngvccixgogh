@@ -64,6 +64,71 @@ function check_file_exists {
 	fi
 }
 
+function check_for_backup {
+	if [ -f "$path_bk" ]; then
+		rm "$path"
+		cp "$path_bk" "$path"
+	else
+		echo "No backup found! Creating new one..."
+		create_backup
+	fi
+}
+
+function create_double_backup {
+	if ! [ -f "$path_old_bk" ]; then
+		cp "$path" "$path_old_bk"
+	fi
+}
+
+function read_file {
+	# Read the whole file
+	while IFS='' read -r line || [[ -n "$line" ]]; do
+		# Doesn't include empty lines and comments
+		if ! [ -z "$line" ] && ! [ "${line:0:1}" == "!" ]; then
+			file_contents+=( "$line" )
+		fi
+		actual_file+=( "$line" )
+	done < "$path"
+	size="$[ ${#actual_file[@]} - 1 ]"
+}
+
+function find_theme {
+	tmp=""
+
+	for i in `seq 0 $size`; do
+		tmp="${actual_file[$i]}"
+		if [ "${tmp:6:10}" == "background" ]; then
+			bg="$i"
+		elif [ "${tmp:6:10}" == "foreground" ]; then
+			fg="$i"
+		elif [ "${tmp:1:7}" == "color15" ]; then
+			lc="$i"
+		fi
+	done
+}
+
+function get_bf_diff {
+	if [ "$[ $bg - $fg ]" -lt "0" ]; then
+		bf_diff="$[ $fg - $bg ]"
+	else
+		bf_diff="$[ $bg - $fg ]"
+	fi
+}
+
+function find_theme_start {
+	if [ "$bg" -eq "$[ $lc - 16 - $bf_diff ]" ]; then
+		echo "bg is below fg, & is last cmd"
+		start_colours="$[ $fg - 1 ]"
+	elif [ "$fg" -eq "$[ $lc - 16 - $bf_diff ]" ]; then
+		echo "fg is below bg, & is last cmd"
+		start_colours="$[ $bg - 1 ]"
+	else
+		echo "$[ $lc - 16 - $bf_diff ]"
+		echo "Something went wrong... :/"
+	fi
+	end_colours="$lc"
+}
+
 function get_new_colours {
 	if [ -f "gvcci.txt" ]; then
 		rm "gvcci.txt"
@@ -92,69 +157,14 @@ function create_backup {
 	echo "Backup created!"
 }
 
-function create_double_backup {
-	if ! [ -f "$path_old_bk" ]; then
-		cp "$path" "$path_old_bk"
-	fi
-}
-
-function read_file {
-	# Read the whole file
-	while IFS='' read -r line || [[ -n "$line" ]]; do
-		# Doesn't include empty lines and comments
-		if ! [ -z "$line" ] && ! [ "${line:0:1}" == "!" ]; then
-			file_contents+=( "$line" )
-		fi
-		actual_file+=( "$line" )
-	done < "$path"
-	size="$[ ${#actual_file[@]} - 1 ]"
-}
-
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # use file_contents to verify bg, fg and lc and such
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-function find_theme {
-	tmp=""
-
-	for i in `seq 0 $size`; do
-		tmp="${actual_file[$i]}"
-		if [ "${tmp:6:10}" == "background" ]; then
-			bg="$i"
-		elif [ "${tmp:6:10}" == "foreground" ]; then
-			fg="$i"
-		elif [ "${tmp:1:7}" == "color15" ]; then
-			lc="$i"
-		fi
-	done
-}
 
 function check_lc_is_last {
 	if [ "$lc" -eq "$size" ]; then
 		echo "color15 is the last thing in the file"
 	fi
-}
-
-function get_bf_diff {
-	if [ "$[ $bg - $fg ]" -lt "0" ]; then
-		bf_diff="$[ $fg - $bg ]"
-	else
-		bf_diff="$[ $bg - $fg ]"
-	fi
-}
-
-function find_theme_start {
-	if [ "$bg" -eq "$[ $lc - 16 - $bf_diff ]" ]; then
-		echo "bg is below fg, & is last cmd"
-		start_colours="$[ $fg - 1 ]"
-	elif [ "$fg" -eq "$[ $lc - 16 - $bf_diff ]" ]; then
-		echo "fg is below bg, & is last cmd"
-		start_colours="$[ $bg - 1 ]"
-	else
-		echo "$[ $lc - 16 - $bf_diff ]"
-		echo "Something went wrong... :/"
-	fi
-	end_colours="$lc"
 }
 
 function write_to_file {
@@ -173,16 +183,6 @@ function write_to_file {
 	for i in `seq 2 17`; do
 		echo "*color""$[ $i - 2 ]"": ""${colour_array[$i]}" >> "$path"
 	done
-}
-
-function check_for_backup {
-	if [ -f "$path_bk" ]; then
-		rm "$path"
-		cp "$path_bk" "$path"
-	else
-		echo "No backup found! Creating new one..."
-		create_backup
-	fi
 }
 
 check_file_exists
