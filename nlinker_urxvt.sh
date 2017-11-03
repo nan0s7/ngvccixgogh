@@ -6,14 +6,14 @@ default_path="/home/scott/.Xresources"
 picture="$1"
 colours=""
 path="$2"
+echo
 if [ -z "$path" ]; then
 	path="$default_path"
 	echo "Using default path= ""$default_path"
 else
 	echo "Using path= ""$path"
 fi
-
-#name="$2"
+no_theme_count="0"
 path_bk="$path""_nl_bk"
 path_old_bk="$path""_old"
 line=""
@@ -48,29 +48,27 @@ function finish {
 }
 trap finish EXIT
 
-echo
-echo "--------------------> Getting colours..."
-
 function check_file_exists {
+	echo
 	if [ -f "$path" ]; then
-		echo
 		echo "FOUND FILE"
-		echo
 	else
-		echo
 		echo "FILE NOT FOUND"
-		echo
 		exit
 	fi
+	echo
 }
 
 function create_new_backup {
 	if [ -f "$path_bk" ]; then
+		echo "Existing backup found!"
+		echo "Forcing a new backup now..."
 		rm "$path_bk"
 	fi
 	cp "$path" "$path_bk"
 	echo
 	echo "Backup created!"
+	echo
 }
 
 function check_for_backup {
@@ -98,7 +96,6 @@ function read_file {
 		fi
 		actual_file+=( "$line" )
 	done < "$path"
-	echo "${actual_file[@]}"
 	size="$[ ${#actual_file[@]} - 1 ]"
 }
 
@@ -113,6 +110,8 @@ function find_theme {
 			fg="$i"
 		elif [ "${tmp:1:7}" == "color15" ]; then
 			lc="$i"
+		else
+			no_theme_count="$[ $no_theme_count + 1 ]"
 		fi
 	done
 }
@@ -126,26 +125,31 @@ function get_bf_diff {
 }
 
 function find_theme_start {
-	if [ "$bg" -eq "$[ $lc - 16 - $bf_diff ]" ]; then
-		echo "bg is below fg, & is last cmd"
-		start_colours="$[ $fg - 1 ]"
-	elif [ "$fg" -eq "$[ $lc - 16 - $bf_diff ]" ]; then
-		echo "fg is below bg, & is last cmd"
-		start_colours="$[ $bg - 1 ]"
+	if [ -z "$bg" ] || [ -z "$fg" ]; then
+		start_colours="$[ $size + 1 ]"
 	else
-		echo "$[ $lc - 16 - $bf_diff ]"
-		echo "Something went wrong... :/"
+		if [ "$bg" -eq "$[ $lc - 16 - $bf_diff ]" ]; then
+			echo "bg is below fg, & is last cmd"
+			start_colours="$[ $fg - 1 ]"
+		elif [ "$fg" -eq "$[ $lc - 16 - $bf_diff ]" ]; then
+			echo "fg is below bg, & is last cmd"
+			start_colours="$[ $bg - 1 ]"
+		else
+			echo "$[ $lc - 16 - $bf_diff ]"
+			echo "Something went wrong... :/"
+		fi
+		end_colours="$lc"
 	fi
-	end_colours="$lc"
 }
 
 function get_new_colours {
 	if [ -f "gvcci.txt" ]; then
+		echo "Removed old theme colour codes"
 		rm "gvcci.txt"
 	fi
 	cd ../gvcci
 	python3 extract.py $picture --template templates/nospace.txt
-	cp gvcci.txt ../ngvccixgogh/
+	mv gvcci.txt ../ngvccixgogh/gvcci.txt
 	cd ../ngvccixgogh
 	colours=`cat gvcci.txt`
 }
@@ -162,11 +166,11 @@ function set_colour_array {
 # use file_contents to verify bg, fg and lc and such
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-function check_lc_is_last {
-	if [ "$lc" -eq "$size" ]; then
-		echo "color15 is the last thing in the file"
-	fi
-}
+#function check_lc_is_last {
+#	if [ "$lc" -eq "$size" ]; then
+#		echo "color15 is the last thing in the file"
+#	fi
+#}
 
 function write_to_file {
 	rm "$path"
@@ -176,8 +180,9 @@ function write_to_file {
 		echo "${actual_file[$i]}" >> "$path"
 	done
 
-#	get_new_colours
-#	set_colour_array
+	if [ "$[ $no_theme_count - 1 ]" -eq "$size" ]; then
+		echo "" >> "$path"
+	fi
 
 	echo "urxvt*background: ""${colour_array[0]}" >> "$path"
 	echo "urxvt*foreground: ""${colour_array[1]}" >> "$path"
@@ -192,19 +197,21 @@ create_new_backup
 create_double_backup
 read_file
 find_theme
-get_bf_diff
+if ! [ "$[ $no_theme_count - 1 ]" -eq "$size" ]; then
+	echo
+	echo "THEME DETECTED"
+	echo
+	get_bf_diff
+fi
 find_theme_start
 get_new_colours
 set_colour_array
-#write_to_file
+write_to_file
 
 echo "Theme installed!"
 xrdb "$path"
-
-echo "--------------------> Passing colours into applier script"
+echo "Re-initialised database"
 echo
 echo "Colours: "$colours
 echo "Name: "$name
 echo
-
-#nohup ./ngoghbase.sh $colours $name >/dev/null 2>&1 &
