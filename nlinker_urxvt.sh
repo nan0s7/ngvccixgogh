@@ -89,6 +89,7 @@ function read_file {
 		fi
 		actual_file+=( "$line" )
 	done < "$path"
+	echo "${actual_file[@]}"
 	size="$[ ${#actual_file[@]} - 1 ]"
 }
 
@@ -194,7 +195,7 @@ get_bf_diff
 find_theme_start
 get_new_colours
 set_colour_array
-write_to_file
+#write_to_file
 
 echo "Theme installed!"
 xrdb "$path"
