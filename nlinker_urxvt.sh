@@ -64,13 +64,22 @@ function check_file_exists {
 	fi
 }
 
+function create_new_backup {
+	if [ -f "$path_bk" ]; then
+		rm "$path_bk"
+	fi
+	cp "$path" "$path_bk"
+	echo
+	echo "Backup created!"
+}
+
 function check_for_backup {
 	if [ -f "$path_bk" ]; then
 		rm "$path"
 		cp "$path_bk" "$path"
 	else
 		echo "No backup found! Creating new one..."
-		create_backup
+		create_new_backup
 	fi
 }
 
@@ -149,15 +158,6 @@ function set_colour_array {
 	done
 }
 
-function create_backup {
-	if [ -f "$path_bk" ]; then
-		rm "$path_bk"
-	fi
-	cp "$path" "$path_bk"
-	echo
-	echo "Backup created!"
-}
-
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # use file_contents to verify bg, fg and lc and such
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -187,7 +187,8 @@ function write_to_file {
 }
 
 check_file_exists
-check_for_backup
+create_new_backup
+#check_for_backup
 create_double_backup
 read_file
 find_theme
