@@ -3,7 +3,8 @@
 string=""
 name=""
 start="0"
-end="0"
+#end="0"
+end="7"
 declare -a string_array=()
 
 string="$1"
@@ -11,7 +12,6 @@ name="$2"
 
 for i in `seq 0 $[ 7 * 17 ]`; do
 	start=$[ $i * 7 ]
-	end=$[ $start + 7 ]
 	string_array+=( "${string:$start:$end}" )
 done
 
