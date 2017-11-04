@@ -23,4 +23,9 @@ You will also need to be using a supported Terminal emulator unless you plan on 
 
 `./nlinker.sh </path/to/image> <name>`
 
+**nlinker_urxvt** uses a different format:
+`./nlinker_urxvt.sh </path/to/image> </path/to/.Xresources>`
+
+If no _.Xresources_ file is specified, it will default to /home/$user/.Xresources.
+
 Please know this is an experiment and functionality may change at any time.
