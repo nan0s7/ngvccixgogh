@@ -1,5 +1,6 @@
 #!/bin/bash
 
+terminal="urxvt"
 user=`whoami`
 default_path="/home/""$user""/.Xresources"
 
@@ -42,7 +43,7 @@ declare -a file_contents=()
 declare -a actual_file=()
 declare -a new_file=()
 
-function finish {
+finish() {
     unset colours
     unset pic_path
     unset name
@@ -56,7 +57,7 @@ function finish {
 }
 trap finish EXIT
 
-function check_file_exists {
+check_file_exists() {
 	echo
 	if [ -f "$path" ]; then
 		echo "FOUND FILE"
@@ -67,7 +68,7 @@ function check_file_exists {
 	echo
 }
 
-function create_new_backup {
+create_new_backup() {
 	if [ -f "$path_bk" ]; then
 		echo "Existing backup found!"
 		echo "Forcing a new backup now..."
@@ -79,23 +80,13 @@ function create_new_backup {
 	echo
 }
 
-function check_for_backup {
-	if [ -f "$path_bk" ]; then
-		rm "$path"
-		cp "$path_bk" "$path"
-	else
-		echo "No backup found! Creating new one..."
-		create_new_backup
-	fi
-}
-
-function create_double_backup {
+create_double_backup() {
 	if ! [ -f "$path_old_bk" ]; then
 		cp "$path" "$path_old_bk"
 	fi
 }
 
-function read_file {
+read_file() {
 	# Read the whole file
 	while IFS='' read -r line || [[ -n "$line" ]]; do
 		# Doesn't include empty lines and comments
@@ -107,7 +98,7 @@ function read_file {
 	size="$[ ${#actual_file[@]} - 1 ]"
 }
 
-function find_theme {
+find_theme() {
 	tmp=""
 
 	for i in `seq 0 $size`; do
@@ -124,7 +115,7 @@ function find_theme {
 	done
 }
 
-function get_bf_diff {
+get_bf_diff() {
 	if [ "$[ $bg - $fg ]" -lt "0" ]; then
 		bf_diff="$[ $fg - $bg ]"
 	else
@@ -132,7 +123,7 @@ function get_bf_diff {
 	fi
 }
 
-function find_theme_start {
+find_theme_start() {
 	if [ -z "$bg" ] || [ -z "$fg" ]; then
 		start_colours="$[ $size + 1 ]"
 	else
@@ -150,7 +141,7 @@ function find_theme_start {
 	fi
 }
 
-function get_new_colours {
+get_new_colours() {
 	if [ -f "gvcci.txt" ]; then
 		echo "Removed old theme colour codes"
 		rm "gvcci.txt"
@@ -162,7 +153,7 @@ function get_new_colours {
 	colours=`cat gvcci.txt`
 }
 
-function set_colour_array {
+set_colour_array() {
 	file=`cat "$path"`
 	for i in `seq 0 $[ 7 * 17 ]`; do
 		start="$[ $i * 7 ]"
@@ -170,17 +161,34 @@ function set_colour_array {
 	done
 }
 
+set_gogh_colours() {
+	BACKGROUND_COLOR="${colour_array[0]}"
+	FOREGROUND_COLOR="${colour_array[1]}"
+	CURSOR_COLOR="$FOREGROUND_COLOR"
+	PROFILE_NAME=""  #"$name"
+	COLOR_01="${colour_array[2]}"
+	COLOR_02="${colour_array[3]}"
+	COLOR_03="${colour_array[4]}"
+	COLOR_04="${colour_array[5]}"
+	COLOR_05="${colour_array[6]}"
+	COLOR_06="${colour_array[7]}"
+	COLOR_07="${colour_array[8]}"
+	COLOR_08="${colour_array[9]}"
+	COLOR_09="${colour_array[10]}"
+	COLOR_10="${colour_array[11]}"
+	COLOR_11="${colour_array[12]}"
+	COLOR_12="${colour_array[13]}"
+	COLOR_13="${colour_array[14]}"
+	COLOR_14="${colour_array[15]}"
+	COLOR_15="${colour_array[16]}"
+	COLOR_16="${colour_array[17]}"
+}
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # use file_contents to verify bg, fg and lc and such
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-#function check_lc_is_last {
-#	if [ "$lc" -eq "$size" ]; then
-#		echo "color15 is the last thing in the file"
-#	fi
-#}
-
-function write_to_file {
+write_to_file() {
 	rm "$path"
 	touch "$path"
 
@@ -199,22 +207,39 @@ function write_to_file {
 	done
 }
 
-check_file_exists
-create_new_backup
-#check_for_backup
-create_double_backup
-read_file
-find_theme
-if ! [ "$[ $no_theme_count - 1 ]" -eq "$size" ]; then
-	echo
-	echo "THEME DETECTED"
-	echo
-	get_bf_diff
+apply_non_urxvt() {
+	SCRIPT_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+	PARENT_PATH="$(dirname "$SCRIPT_PATH")"
+
+	if [ -e $PARENT_PATH"/apply-colors.sh" ]; then
+		source $PARENT_PATH"/apply-colors.sh"
+	else
+		source <(wget -O - https://raw.githubusercontent.com/Mayccoll/Gogh/master/apply-colors.sh)
+	fi
+}
+
+if [ "$terminal" -eq "urxvt" ]; then
+	check_file_exists
+	create_new_backup
+	create_double_backup
+	read_file
+	find_theme
+	if ! [ "$[ $no_theme_count - 1 ]" -eq "$size" ]; then
+		echo
+		echo "THEME DETECTED"
+		echo
+		get_bf_diff
+	fi
+	find_theme_start
+	get_new_colours
+	set_colour_array
+	write_to_file
+else
+	get_new_colours
+	set_colour_array
+	set_gogh_colours
+	apply_non_urxvt
 fi
-find_theme_start
-get_new_colours
-set_colour_array
-write_to_file
 
 echo
 echo "Theme installed!"
