@@ -218,7 +218,7 @@ apply_non_urxvt() {
 	fi
 }
 
-if [ "$terminal" -eq "urxvt" ]; then
+if [ "$terminal" == "urxvt" ]; then
 	check_file_exists
 	create_new_backup
 	create_double_backup
