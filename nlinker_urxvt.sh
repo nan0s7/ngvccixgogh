@@ -1,10 +1,9 @@
 #!/bin/bash
 
-terminal="urxvt"
-user=`whoami`
-default_path="/home/""$user""/.Xresources"
-
 # Variable initialisation
+user="$(whoami)"
+default_path="/home/""$user""/.Xresources"
+terminal="$(xdotool getactivewindow getwindowname)"
 pic_path="$1"
 ext_len="${pic_path#*.*}"
 ext_len="${#ext_len}"
@@ -234,6 +233,8 @@ if [ "$terminal" == "urxvt" ]; then
 	get_new_colours
 	set_colour_array
 	write_to_file
+
+	xrdb "$path"
 else
 	get_new_colours
 	set_colour_array
@@ -243,7 +244,5 @@ fi
 
 echo
 echo "Theme installed!"
-xrdb "$path"
-echo "Re-initialised database"
 echo
 echo "Colours: "$colours
