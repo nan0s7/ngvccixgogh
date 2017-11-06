@@ -8,6 +8,8 @@ Please check out each respective project used here; [Gogh](https://github.com/Ma
 - git
 - Everything you need for GVCCI to work (python3 and modules)
 
+- Thinking about adding the xdtool package to easily get the current window if the terminal isn't shell-based like _urxvt_.
+
 You will also need to be using a supported Terminal emulator unless you plan on helping someone add support, of course!
 
 ## Setup
