@@ -17,9 +17,9 @@ path="$2"
 echo
 if [ -z "$path" ]; then
 	path="$default_path"
-	echo "Using default path= ""$default_path"
+	echo "Using default path=""$default_path"
 else
-	echo "Using path= ""$path"
+	echo "Using path=""$path"
 fi
 no_theme_count="0"
 path_bk="$path""_nl_bk"
@@ -146,7 +146,8 @@ get_new_colours() {
 		rm "gvcci.txt"
 	fi
 	cd ../gvcci
-	python3 extract.py $pic_path --template templates/nospace.txt
+#	python3 extract.py $pic_path --template templates/nospace.txt
+	./gvcci.sh $pic_path --template templates/nospace.txt
 	cd ../ngvccixgogh
 	cp "/home/""$user""/.gvcci/themes/""$picture""/nospace.txt" "gvcci.txt"
 	colours=`cat gvcci.txt`
