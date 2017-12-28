@@ -6,6 +6,7 @@ Please check out each respective project used here; [Gogh](https://github.com/Ma
 ## Dependencies
 - Bash (I'm sure >v3 will work well)
 - git
+- The non-urxvt version uses Gogh to apply the colours
 - Everything you need for GVCCI to work (python3 and modules)
 
 - Thinking about adding the xdtool package to easily get the current window if the terminal isn't shell-based like _urxvt_.
@@ -16,6 +17,7 @@ You will also need to be using a supported Terminal emulator unless you plan on 
 - Make sure nlinker.sh and ngoghbase.sh are executable: `chmod +x <file_name>`
 - `cd` to a directory to place everything
 - Run `git clone https://github.com/FabriceCastel/gvcci`
+- Run `./install_dependencies.sh` to set it up properly
 - Run `git clone https://github.com/nan0s7/ngvccixgogh`
 - `cd` into **ngvccixgogh**
 - Run `nlinker.sh` with desired arguments (see below)
@@ -26,6 +28,7 @@ You will also need to be using a supported Terminal emulator unless you plan on 
 `./nlinker.sh </path/to/image> <name>`
 
 **nlinker_urxvt** uses a different format:
+
 `./nlinker_urxvt.sh </path/to/image> </path/to/.Xresources>`
 
 If no _.Xresources_ file is specified, it will default to /home/$user/.Xresources.
